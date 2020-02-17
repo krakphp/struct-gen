@@ -1,0 +1,34 @@
+{
+    "name": "krak/struct-gen",
+    "type": "composer-plugin",
+    "autoload": {
+        "psr-4": {
+            "Krak\\StructGen\\": "src"
+        },
+        "files": ["src/struct-gen.php"]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Krak\\StructGen\\Tests\\": "test"
+        }
+    },
+    "require-dev": {
+        "composer/composer": "^1.10",
+        "phpunit/phpunit": "^9.0",
+        "symfony/finder": "^5.1",
+        "symfony/var-dumper": "^5.0",
+        "vimeo/psalm": "^3.8"
+    },
+    "require": {
+        "php": "^7.2",
+        "composer-plugin-api": "^1.1",
+        "krak/lex": "^1.0",
+        "nikic/php-parser": "^4.3"
+    },
+    "scripts": {
+        "test": "phpunit --testdox --colors=always"
+    },
+    "extra": {
+        "class": "Krak\\StructGen\\Bridge\\Composer\\StructGenComposerPlugin"
+    }
+}

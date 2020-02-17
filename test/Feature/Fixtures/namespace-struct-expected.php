@@ -1,0 +1,121 @@
+<?php
+
+namespace Foo\Bar;
+
+final class AcmeStruct
+{
+    use AcmeStructStruct;
+    /** @var int */
+    private $id;
+    /** @var string */
+    private $title;
+    /** @var string */
+    private $slug;
+}
+
+final class BazStruct
+{
+    use BazStructStruct;
+
+    /** @var int */
+    private $id;
+    /** @var string */
+    private $title;
+    /** @var string */
+    private $slug;
+}
+
+trait AcmeStructStruct
+{
+    public function __construct(int $id, string $title, string $slug)
+    {
+        $this->id = $id;
+        $this->title = $title;
+        $this->slug = $slug;
+    }
+    public static function fromValidatedArray(array $data) : self
+    {
+        return new self($data['id'], $data['title'], $data['slug']);
+    }
+    public function toArray() : array
+    {
+        return ['id' => $this->id, 'title' => $this->title, 'slug' => $this->slug];
+    }
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function title() : string
+    {
+        return $this->title;
+    }
+    public function slug() : string
+    {
+        return $this->slug;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+    public function withTitle(string $title) : self
+    {
+        $self = clone $this;
+        $self->title = $title;
+        return $self;
+    }
+    public function withSlug(string $slug) : self
+    {
+        $self = clone $this;
+        $self->slug = $slug;
+        return $self;
+    }
+}
+trait BazStructStruct
+{
+    public function __construct(int $id, string $title, string $slug)
+    {
+        $this->id = $id;
+        $this->title = $title;
+        $this->slug = $slug;
+    }
+    public static function fromValidatedArray(array $data) : self
+    {
+        return new self($data['id'], $data['title'], $data['slug']);
+    }
+    public function toArray() : array
+    {
+        return ['id' => $this->id, 'title' => $this->title, 'slug' => $this->slug];
+    }
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function title() : string
+    {
+        return $this->title;
+    }
+    public function slug() : string
+    {
+        return $this->slug;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+    public function withTitle(string $title) : self
+    {
+        $self = clone $this;
+        $self->title = $title;
+        return $self;
+    }
+    public function withSlug(string $slug) : self
+    {
+        $self = clone $this;
+        $self->slug = $slug;
+        return $self;
+    }
+}

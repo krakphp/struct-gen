@@ -1,0 +1,107 @@
+<?php
+
+final class AcmeRequest
+{
+    use AcmeRequestStruct;
+
+    /** @var int */
+    private $id;
+    /** @var string */
+    private $title;
+    /** @var string */
+    private $slug;
+    /** @var array */
+    private $myArray;
+    /** @var Prop[] */
+    private $props;
+    /** @var ?string */
+    private $defaultString = null;
+}
+
+trait AcmeRequestStruct
+{
+    /** @param Prop[] $props */
+    public function __construct(int $id, string $title, string $slug, array $myArray, array $props, ?string $defaultString = null)
+    {
+        $this->id = $id;
+        $this->title = $title;
+        $this->slug = $slug;
+        $this->myArray = $myArray;
+        $this->props = $props;
+        $this->defaultString = $defaultString;
+    }
+    public static function fromValidatedArray(array $data) : self
+    {
+        return new self($data['id'], $data['title'], $data['slug'], $data['myArray'], \array_map(function (array $value) : Prop {
+            return Prop::fromValidatedArray($value);
+        }, $data['props']), array_key_exists('defaultString', $data) ? $data['defaultString'] : null);
+    }
+    public function toArray() : array
+    {
+        return ['id' => $this->id, 'title' => $this->title, 'slug' => $this->slug, 'myArray' => $this->myArray, 'props' => \array_map(function (Prop $value) : array {
+            return $value->toArray();
+        }, $this->props), 'defaultString' => $this->defaultString];
+    }
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function title() : string
+    {
+        return $this->title;
+    }
+    public function slug() : string
+    {
+        return $this->slug;
+    }
+    public function myArray() : array
+    {
+        return $this->myArray;
+    }
+    /** @return Prop[] */
+    public function props() : array
+    {
+        return $this->props;
+    }
+    public function defaultString() : ?string
+    {
+        return $this->defaultString;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+    public function withTitle(string $title) : self
+    {
+        $self = clone $this;
+        $self->title = $title;
+        return $self;
+    }
+    public function withSlug(string $slug) : self
+    {
+        $self = clone $this;
+        $self->slug = $slug;
+        return $self;
+    }
+    public function withMyArray(array $myArray) : self
+    {
+        $self = clone $this;
+        $self->myArray = $myArray;
+        return $self;
+    }
+    /** @param Prop[] $props */
+    public function withProps(array $props) : self
+    {
+        $self = clone $this;
+        $self->props = $props;
+        return $self;
+    }
+    public function withDefaultString(?string $defaultString = null) : self
+    {
+        $self = clone $this;
+        $self->defaultString = $defaultString;
+        return $self;
+    }
+}

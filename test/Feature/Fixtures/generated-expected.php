@@ -1,0 +1,85 @@
+<?php
+
+final class AcmeRequest
+{
+    use AcmeRequestStruct, OtherTrait;
+
+    /** @var int */
+    private $id;
+    /** @var string */
+    private $title;
+}
+
+trait OtherTrait {
+    private $hi;
+}
+
+final class BazRequest
+{
+    use BazRequestStruct;
+
+    /** @var int */
+    private $id;
+}
+
+trait AcmeRequestStruct
+{
+    public function __construct(int $id, string $title)
+    {
+        $this->id = $id;
+        $this->title = $title;
+    }
+    public static function fromValidatedArray(array $data) : self
+    {
+        return new self($data['id'], $data['title']);
+    }
+    public function toArray() : array
+    {
+        return ['id' => $this->id, 'title' => $this->title];
+    }
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function title() : string
+    {
+        return $this->title;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+    public function withTitle(string $title) : self
+    {
+        $self = clone $this;
+        $self->title = $title;
+        return $self;
+    }
+}
+trait BazRequestStruct
+{
+    public function __construct(int $id)
+    {
+        $this->id = $id;
+    }
+    public static function fromValidatedArray(array $data) : self
+    {
+        return new self($data['id']);
+    }
+    public function toArray() : array
+    {
+        return ['id' => $this->id];
+    }
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+}
