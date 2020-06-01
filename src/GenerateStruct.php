@@ -37,6 +37,10 @@ final class GenerateStruct
         $nodeFinder = new NodeFinder;
         $factory = new BuilderFactory();
         $classesToGenerateStructs = $this->findClassesToGenerateStructs($nodeFinder, $ast);
+        if (!$classesToGenerateStructs) {
+            return $code;
+        }
+
         $alreadyExistingGeneratedTraits = $this->findAlreadyExistingGeneratedTraits($nodeFinder, $ast, $classesToGenerateStructs);
         $code = $this->removeExistingTraitsFromOriginalCode($code, $alreadyExistingGeneratedTraits);
 

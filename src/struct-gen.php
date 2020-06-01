@@ -38,7 +38,7 @@ function generateStructsForFiles(iterable $files, LoggerInterface $logger = null
             $logger->debug('No changes detected.');
         } else {
             $logger->info("New Struct Info: \n". $updated);
+            file_put_contents($file->getPathname(), $updated);
         }
-        file_put_contents($file->getPathname(), $updated);
     }
 }

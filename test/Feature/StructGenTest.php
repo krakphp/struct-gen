@@ -49,4 +49,19 @@ class StructGenTest extends TestCase
             trim(file_get_contents(self::GENERATED_FILE_PATH))
         );
     }
+
+    /** @test */
+    public function files_without_any_matching_classes_are_left_untouched() {
+        $genStruct = new GenerateStruct();
+        $input = <<<'PHP'
+<?php
+
+interface Acme {}
+class Foo {}
+function bar() {
+
+}
+PHP;
+        $this->assertEquals($input, $genStruct($input));
+    }
 }
