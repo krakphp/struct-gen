@@ -1,6 +1,7 @@
 {
     "name": "krak/struct-gen",
     "type": "composer-plugin",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Krak\\StructGen\\": "src"
