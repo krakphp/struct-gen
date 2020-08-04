@@ -2,6 +2,7 @@
 
 namespace Krak\StructGen;
 
+use Krak\StructGen\Internal\OptionsMap;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\PrettyPrinter;
@@ -12,18 +13,21 @@ final class CreateStructStatementsArgs
     private $factory;
     private $printer;
     private $class;
+    private $options;
 
-    public function __construct(BuilderFactory $factory, PrettyPrinterAbstract $printer, Class_ $class) {
+    public function __construct(BuilderFactory $factory, PrettyPrinterAbstract $printer, Class_ $class, ?OptionsMap $options = null) {
         $this->factory = $factory;
         $this->printer = $printer;
         $this->class = $class;
+        $this->options = $options ?: OptionsMap::empty();
     }
 
-    public static function createFromClass(Class_ $class): self {
+    public static function createFromClass(Class_ $class, ?OptionsMap $options = null): self {
         return new self(
             new BuilderFactory(),
             new PrettyPrinter\Standard(),
-            $class
+            $class,
+            $options
         );
     }
 
@@ -37,5 +41,9 @@ final class CreateStructStatementsArgs
 
     public function class(): Class_ {
         return $this->class;
+    }
+
+    public function options(): OptionsMap {
+        return $this->options;
     }
 }

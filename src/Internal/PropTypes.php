@@ -67,8 +67,10 @@ final class PropTypes
             return null;
         }
 
+        $docBlock = DocBlock::stripComments($prop->getDocComment()->getText());
+
         $matches = [];
-        if (!preg_match('/@var ((?:(?!\*\/).)+)(\*\/)?$/', $prop->getDocComment()->getText(), $matches)) {
+        if (!preg_match('/@var ((?:(?!\*\/).)+)(\*\/)?$/', $docBlock, $matches)) {
             return null;
         }
 

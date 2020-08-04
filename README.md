@@ -205,6 +205,32 @@ All structs are immutable by default, so, if you want to change a value of a str
 
 Converts the struct into an array representation. This works for nested structs and collections of structs as well.
 
+### Generate Struct Options
+
+Above the `use {className}Struct`, you can specify options to use for that certain class which can affect the generation process with the docblock tag `@struct-gen`
+
+The format is `@struct-gen {option-name} ?{option-value}`. Where the value is optional and can be a simple string, comma separated list, or json string.
+
+Here's an example:
+
+```php
+<?php
+
+class Acme {
+    /** @struct-gen generate getters,withers */
+    use AcmeStruct;
+    // ...
+}
+```
+
+You can have multiple struct-gen tags with various different option names and values and those all get merged together.
+
+#### generate <csv-of-generators>
+
+The generate option allows you to control which generators get used for the specific struct. If you only want getters and withers, you can specify that accordingly.
+
+The list of generator names you can use are: `constructor,from-validated-array,to-array,getters,withers`
+
 ## Why use static generation?
 
 Most libraries for DTOs or structs are not IDE friendly and give access to helpful methods for a struct via runtime magic and reflection. Not only is there a slight performance hit with these methods, it's difficult to get typesafe while also working well with ides and static analysis tools.
@@ -233,3 +259,6 @@ PHPUnit:
 
 - Create from non-validated arrays
 - Better psalm support for type definitions
+- Plugin system
+- Generate from Open Api 3
+- Export to Open API 3

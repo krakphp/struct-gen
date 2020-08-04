@@ -2,9 +2,9 @@
 
 namespace Krak\StructGen;
 
+use Krak\StructGen\Internal\OptionsMap;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Property;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
@@ -19,13 +19,13 @@ final class GenerateStruct
     private $createStructStatements;
 
     public function __construct(?CreateStructStatements $createStructStatements = null) {
-        $this->createStructStatements = $createStructStatements ?: new CreateStructStatements\ChainCreateStructStatements(
-            new CreateStructStatements\ConstructorCreateStructStatements(),
-            new CreateStructStatements\FromValidatedArrayConstructorCreateStructStatements(),
-            new CreateStructStatements\ToArrayCreateStructStatements(),
-            new CreateStructStatements\GettersCreateStructStatements(),
-            new CreateStructStatements\ImmutableWithersCreateStructStatements()
-        );
+        $this->createStructStatements = $createStructStatements ?: new CreateStructStatements\ChainCreateStructStatements([
+            'constructor' => new CreateStructStatements\ConstructorCreateStructStatements(),
+            'from-validated-array' => new CreateStructStatements\FromValidatedArrayConstructorCreateStructStatements(),
+            'to-array' => new CreateStructStatements\ToArrayCreateStructStatements(),
+            'getters' => new CreateStructStatements\GettersCreateStructStatements(),
+            'withers' => new CreateStructStatements\ImmutableWithersCreateStructStatements()
+        ]);
     }
 
     public function __invoke(string $code): string {
@@ -48,7 +48,12 @@ final class GenerateStruct
         $traits = array_map(function(Class_ $class) use ($factory, $printer) {
             assert($class->name !== null); // Should not be null as we've checked from above that it's not null
             return $factory->trait($class->name . 'Struct')
-                ->addStmts(($this->createStructStatements)(new CreateStructStatementsArgs($factory, $printer, $class)))
+                ->addStmts(($this->createStructStatements)(new CreateStructStatementsArgs(
+                    $factory,
+                    $printer,
+                    $class,
+                    $this->createOptionsForClass($class))
+                ))
                 ->getNode();
         }, $classesToGenerateStructs);
 
@@ -62,15 +67,8 @@ final class GenerateStruct
                 return false;
             }
 
-            foreach ($node->getTraitUses() as $usedTrait) {
-                foreach ($usedTrait->traits as $trait) {
-                    if ($trait->getFirst() === $node->name . 'Struct') {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            $traitUse = $this->findTraitUseWithGeneratedStructTrait($node);
+            return $traitUse !== null;
         });
     }
 
@@ -113,5 +111,24 @@ final class GenerateStruct
         }
 
         return implode("\n", $linesOfCode);
+    }
+
+    private function createOptionsForClass(Class_ $class): OptionsMap {
+        $traitUse = $this->findTraitUseWithGeneratedStructTrait($class);
+        return $traitUse->getDocComment()
+            ? OptionsMap::fromDocBlock($traitUse->getDocComment()->getText())
+            : OptionsMap::empty();
+    }
+
+    private function findTraitUseWithGeneratedStructTrait(Class_ $node): ?Node\Stmt\TraitUse {
+        foreach ($node->getTraitUses() as $usedTrait) {
+            foreach ($usedTrait->traits as $trait) {
+                if ($trait->getFirst() === $node->name . 'Struct') {
+                    return $usedTrait;
+                }
+            }
+        }
+
+        return null;
     }
 }
