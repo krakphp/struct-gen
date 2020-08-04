@@ -12,7 +12,9 @@ final class ConstructorTest extends CreateStructStatementsTestCase
 <?php
 class Acme {
     public $id;
-    /** @var string */
+    /** 
+     * @var string 
+     */
     public $code;
     /** @var string[] */
     public $tags;

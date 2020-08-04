@@ -1,0 +1,52 @@
+<?php
+
+final class AcmeRequest
+{
+    /** @struct-gen generate getters,withers */
+    use AcmeRequestStruct;
+
+    /** @var int */
+    private $id;
+    /** @var string */
+    private $title;
+}
+
+-- EXPECTED --
+
+<?php
+
+final class AcmeRequest
+{
+    /** @struct-gen generate getters,withers */
+    use AcmeRequestStruct;
+
+    /** @var int */
+    private $id;
+    /** @var string */
+    private $title;
+}
+
+trait AcmeRequestStruct
+{
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function title() : string
+    {
+        return $this->title;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+    public function withTitle(string $title) : self
+    {
+        $self = clone $this;
+        $self->title = $title;
+        return $self;
+    }
+}
+

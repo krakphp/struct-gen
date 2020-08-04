@@ -22,20 +22,27 @@ class StructGenTest extends TestCase
      * @dataProvider provideTestCaseNames
      * @test
      */
-    public function can_generate_struct_files(string $testCase) {
+    public function can_generate_struct_files(string $testContent) {
         $genStruct = new GenerateStruct();
-        $result = $genStruct(file_get_contents(__DIR__ . "/Fixtures/{$testCase}.php"));
+        [$test, $expected] = explode('-- EXPECTED --', $testContent);
+
+        $result = $genStruct($test);
 
         $this->assertEquals(
-            trim(file_get_contents(__DIR__ . "/Fixtures/{$testCase}-expected.php")),
+            trim($expected),
             trim($result)
         );
     }
 
     public function provideTestCaseNames() {
-        yield 'simple-struct' => ['simple-struct'];
-        yield 'namespace-struct' => ['namespace-struct'];
-        yield 'generated' => ['generated'];
+        $files = new \DirectoryIterator(__DIR__ . '/Fixtures/struct-test-cases');
+        foreach ($files as $file) {
+            if ($file->isDot()) {
+                continue;
+            }
+
+            yield $file->getFilename() => [file_get_contents($file->getPathname())];
+        }
     }
 
     /** @test */

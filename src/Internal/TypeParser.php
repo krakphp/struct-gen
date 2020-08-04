@@ -145,10 +145,6 @@ final class TypeParser
         return $tok ? $tok->token : 'eof';
     }
 
-    private function expectToken(TokenStream $toks, string $token, string $for): MatchedToken {
-        $this->expectTokens($toks, [$token], $for);
-    }
-
     private function expectTokens(TokenStream $toks, array $tokens, string $for): MatchedToken {
         $tok = $toks->getToken();
         if (!$tok || !in_array($tok->token, $tokens)) {
