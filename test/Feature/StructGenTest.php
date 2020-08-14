@@ -74,10 +74,9 @@ class StructGenTest extends TestCase
 
     /** @test */
     public function can_generate_structs_for_files() {
-        $tplPath = __DIR__ . '/Fixtures/generated-from-paths-template.php';
+        $this->given_generated_from_paths_is_initialized_with('template');
         $expectedPath = __DIR__ . '/Fixtures/generated-from-paths-expected.php';
-        copy($tplPath, self::GENERATED_FILE_PATH);
-        generateStructsForFiles(traversePhpFiles([__DIR__ . '/Fixtures/generated-from-paths.php']));
+        generateStructsForFiles(traversePhpFiles([self::GENERATED_FILE_PATH]));
         $this->assertEquals(
             trim(file_get_contents($expectedPath)),
             trim(file_get_contents(self::GENERATED_FILE_PATH))
@@ -96,6 +95,40 @@ class StructGenTest extends TestCase
             trim(file_get_contents(__DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/.generated-expected.php')),
             trim(file_get_contents(__DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/.generated.php'))
         );
+    }
+
+    /**
+     * @depends can_generate_structs_externally_for_files
+     * @test
+     */
+    public function generating_structs_inline_for_files_can_detect_changes() {
+        // set of files is different, should result in changed output
+        $res = generateStructsExternallyForFiles(traversePhpFiles([
+            __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/Acme.php',
+            __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/GlobalClass.php',
+        ]), __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/.generated.php');
+        $this->assertEquals(true, $res->hasChanges());
+    }
+    
+    /**
+     * @dataProvider provide_for_generating_structs_externally_for_files_can_detect_changes
+     * @test
+     */
+    public function generating_structs_externally_for_files_can_detect_changes(string $type, bool $hasChanges) {
+        $this->given_generated_from_paths_is_initialized_with($type);
+        $res = generateStructsForFiles(traversePhpFiles([self::GENERATED_FILE_PATH]));
+        $this->assertEquals($hasChanges, $res->hasChanges());
+    }
+
+    public function provide_for_generating_structs_externally_for_files_can_detect_changes() {
+        yield 'has-changes' => ['template', true];
+        yield 'no-changes' => ['expected', false];
+    }
+
+    /** can be template or expected */
+    private function given_generated_from_paths_is_initialized_with(string $type = 'template') {
+        $tplPath = __DIR__ . "/Fixtures/generated-from-paths-{$type}.php";
+        copy($tplPath, self::GENERATED_FILE_PATH);
     }
 
     /** @test */

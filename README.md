@@ -240,6 +240,25 @@ The generate option allows you to control which generators get used for the spec
 
 The list of generator names you can use are: `constructor,from-validated-array,to-array,getters,withers`
 
+### Continuous Integration Setup
+
+If you are committing your struct gen changes directly in the repo, then you'll want to make sure that struct-gen was properly run and tested before any commit is merged into the mainline branch.
+
+In that case, you'll want to use the `--fail-on-changes` flag while running struct gen during your CI testing pipeline. This will fail with exit code 1 if any changes are detected which in most CI pipelines will fail the build ensuring that the developer submitting the patch has tested with the latest changes and didn't modify any of the generated files.
+
+Example:
+```yaml
+- composer struct-gen:generate --fail-on-changes
+```
+
+If you are generating the structs into an external file via the `generatedPath` option and are ignoring that file in your CVS, then you'll want to make sure to run struct-gen **before you run composer install**.
+
+```yaml
+- composer struct-gen:generate -vv
+# some point later
+- composer install --no-dev -o
+```
+
 ## Why use static generation?
 
 Most libraries for DTOs or structs are not IDE friendly and give access to helpful methods for a struct via runtime magic and reflection. Not only is there a slight performance hit with these methods, it's difficult to get typesafe while also working well with ides and static analysis tools.
