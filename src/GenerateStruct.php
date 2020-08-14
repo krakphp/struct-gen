@@ -3,11 +3,13 @@
 namespace Krak\StructGen;
 
 use Krak\StructGen\Internal\OptionsMap;
+use PhpParser\Builder\Namespace_;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinterAbstract;
 
 /**
  * Takes the contents of a file that contains class definitions
@@ -28,17 +30,18 @@ final class GenerateStruct
         ]);
     }
 
-    public function __invoke(string $code): string {
+    public function __invoke(GenerateStructArgs $args): GenerateStructResult {
+        $code = $args->code();
         $parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
         $ast = $parser->parse($code);
         if (!$ast) {
-            return $code;
+            return $args->generateInline() ? GenerateStructResult::inlineGeneratedCode($code) : GenerateStructResult::astNodes([]);
         }
         $nodeFinder = new NodeFinder;
         $factory = new BuilderFactory();
         $classesToGenerateStructs = $this->findClassesToGenerateStructs($nodeFinder, $ast);
         if (!$classesToGenerateStructs) {
-            return $code;
+            return $args->generateInline() ? GenerateStructResult::inlineGeneratedCode($code) : GenerateStructResult::astNodes([]);
         }
 
         $alreadyExistingGeneratedTraits = $this->findAlreadyExistingGeneratedTraits($nodeFinder, $ast, $classesToGenerateStructs);
@@ -57,7 +60,39 @@ final class GenerateStruct
                 ->getNode();
         }, $classesToGenerateStructs);
 
-        return trim($code) . "\n\n" . $printer->prettyPrint($traits);
+        return $args->generateInline()
+            ? $this->prepareInlineCode($code, $traits, $printer)
+            : $this->prepareExternalCode($ast, $traits);
+    }
+
+    /** appends the traits directly to the original code */
+    private function prepareInlineCode(string $code, array $traits, PrettyPrinterAbstract $printer): GenerateStructResult {
+        return GenerateStructResult::inlineGeneratedCode(trim($code) . "\n\n" . $printer->prettyPrint($traits));
+    }
+
+    /**
+     * returns the traits as is in order to be compiled into an external file
+     * @param Node[] $ast
+     * @param Node[] $traits
+     */
+    private function prepareExternalCode(array $ast, array $traits): GenerateStructResult {
+        $this->assertZeroOrOneNamespaceInAST($ast);
+
+        /** @var Node\Stmt\Namespace_ $namespaceStmt */
+        $namespaceStmt = (new NodeFinder())->findFirstInstanceOf($ast, Node\Stmt\Namespace_::class) ?? (new Namespace_(null))->getNode();
+        $namespaceStmt->stmts = $traits;
+
+        return GenerateStructResult::astNodes([$namespaceStmt]);
+    }
+
+    /** @param Node[] $ast */
+    private function assertZeroOrOneNamespaceInAST(array $ast) {
+        $res = (new NodeFinder())->findInstanceOf($ast, Node\Stmt\Namespace_::class);
+        if (count($res) <= 1) {
+            return;
+        }
+
+        throw new \RuntimeException('External struct generation does not currently support multiple namespaces in one source.');
     }
 
     /** @return Class_[] */

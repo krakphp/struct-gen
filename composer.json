@@ -26,6 +26,9 @@
         "krak/lex": "^1.0",
         "nikic/php-parser": "^4.3"
     },
+    "suggest": {
+        "symfony/finder": "Support glob based patterns for directory traversal."
+    },
     "scripts": {
         "test": "phpunit --testdox --colors=always"
     },

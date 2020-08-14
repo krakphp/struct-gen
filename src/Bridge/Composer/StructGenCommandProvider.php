@@ -20,9 +20,9 @@ final class StructGenCommandProvider implements CommandProvider
     }
 
     public function getCommands() {
-        $paths = $this->composer->getPackage()->getExtra()['struct-gen']['paths'] ?? ['src'];
+        $structGenConfig = StructGenComposerConfig::fromComposer($this->composer);
         return [
-            new GenerateStructsCommand($paths)
+            new GenerateStructsCommand($structGenConfig)
         ];
     }
 }
