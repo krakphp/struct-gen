@@ -38,36 +38,27 @@ final class Category
 }
 ```
 
-When generate structs runs, the file will be updated with the following traits filled in to provide struct capabilities.
+Run `composer struct-gen:generate` and then those traits get filled with methods to allow an api like:
 
-The original classes are left untouched, just the traits are filled in. You are free to add whatever you want to your class.
+```php
+<?php
+
+$product = new App\Catalog\Product(1, null, []);
+$product->id();
+$product->code();
+$product = $product->withCategories([
+    App\Catalog\Category::fromValidatedArray(['id' => 1, 'name' => 'Nike'])
+]);
+$product->toArray();
+// ['id' => 1, 'code' => null, [['id' => 1', 'name' => 'Nike']]]
+```
+
+Struct traits are generated that provide all of the boilerplate associated with making immutable value objects.  
 
 ```php
 <?php
 
 namespace App\Catalog;
-
-final class Product
-{
-    use ProductStruct;
-
-    /** @var int */
-    private $id;
-    /** @var ?string */
-    private $code;
-    /** @var Category[] */
-    private $categories;
-}
-
-final class Category
-{
-    use CategoryStruct;
-
-    /** @var int */
-    private $id;
-    /** @var string */
-    private $name;
-}
 
 trait ProductStruct
 {
@@ -161,11 +152,9 @@ trait CategoryStruct
 }
 ```
 
-Struct gen registers as a composer plugin, so you can generate structs inside of the `src` dir with `composer struct-gen:generate -vvv`
-
 ### Configuring Paths
 
-To configure what paths you want to search for generating the structs, you can easily just pass in paths to the `struct-gen:generate` command.
+To configure what paths you want to search for generating the structs, you can easily just pass in paths to the `struct-gen:generate` command. By default, it looks into the `./src` folder.
 
 You can also configure the paths to search inside of your composer.json so that you don't have to list the paths each time you run the command:
 
@@ -178,6 +167,26 @@ You can also configure the paths to search inside of your composer.json so that 
   }
 }
 ```
+
+### Generated File vs Inline Generation
+
+By default, struct-gen will save the generated structs inline with php file of the original class. In this format, it's intended that the generated structs are committed into your repository.
+
+However, you can optionally configure struct-gen to save all generated structs into a single file and automatically have composer register that file as a class map.
+
+To do so, just update your composer json config like so:
+
+```json
+{
+  "extra": {
+    "struct-gen": {
+      "generated-path": ".generated-structs.php" 
+    }
+  }
+}
+```
+
+That file can be committed into your repo, or run on your CI pipeline to ensure the latest version of the structs are available.
 
 ### Generators
 
@@ -254,6 +263,10 @@ PHPUnit:
 ```
 ./vendor/bin/phpunit
 ```
+
+### Testing the Composer Plugin
+
+The composer plugin is currently manually tested carefully with another local repo that requires the struct-gen package locally. I typically do some manual tests over all the features. 
 
 ## Roadmap
 

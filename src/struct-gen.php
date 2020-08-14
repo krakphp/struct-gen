@@ -33,7 +33,7 @@ function generateStructsForFiles(iterable $files, LoggerInterface $logger = null
     foreach ($files as $file) {
         $logger->info('Generate Structs for File: ' . $file->getPathname());
         $original = file_get_contents($file->getPathname());
-        $updated = $generateStruct($original);
+        $updated = $generateStruct(GenerateStructArgs::inline($original))->code();
         if ($original === $updated) {
             $logger->debug('No changes detected.');
         } else {
@@ -41,4 +41,18 @@ function generateStructsForFiles(iterable $files, LoggerInterface $logger = null
             file_put_contents($file->getPathname(), $updated);
         }
     }
+}
+
+function generateStructsExternallyForFiles(iterable $files, string $generatedFilePath, LoggerInterface $logger = null, ?callable $generateStruct = null): void {
+    $logger = $logger ?: new NullLogger();
+    $generateStruct = $generateStruct ?: new GenerateStruct();
+    $ast = [];
+    foreach ($files as $file) {
+        $logger->info('Generate Structs for File: ' . $file->getPathname());
+        $original = file_get_contents($file->getPathname());
+        $ast = array_merge($ast, $generateStruct(GenerateStructArgs::external($original))->ast());
+    }
+
+    $logger->info('Writing generated structs into: ' . $generatedFilePath);
+    file_put_contents($generatedFilePath, (new \PhpParser\PrettyPrinter\Standard())->prettyPrintFile($ast));
 }

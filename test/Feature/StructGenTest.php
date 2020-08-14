@@ -3,7 +3,10 @@
 namespace Krak\StructGen\Tests\Feature;
 
 use Krak\StructGen\GenerateStruct;
+use Krak\StructGen\GenerateStructArgs;
+use PhpParser\PrettyPrinter\Standard;
 use function Krak\StructGen\{
+    generateStructsExternallyForFiles,
     generateStructsForFiles,
     traversePhpFiles};
 use PHPUnit\Framework\TestCase;
@@ -19,23 +22,27 @@ class StructGenTest extends TestCase
     }
 
     /**
-     * @dataProvider provideTestCaseNames
+     * @dataProvider provide_for_can_generate_struct_files_inline
      * @test
      */
-    public function can_generate_struct_files(string $testContent) {
+    public function can_generate_struct_files_inline(string $testContent) {
         $genStruct = new GenerateStruct();
         [$test, $expected] = explode('-- EXPECTED --', $testContent);
 
-        $result = $genStruct($test);
+        $result = $genStruct(GenerateStructArgs::inline($test));
 
         $this->assertEquals(
             trim($expected),
-            trim($result)
+            trim($result->code())
         );
     }
 
-    public function provideTestCaseNames() {
-        $files = new \DirectoryIterator(__DIR__ . '/Fixtures/struct-test-cases');
+    public function provide_for_can_generate_struct_files_inline() {
+        yield from $this->listTestCaseFiles(__DIR__ . '/Fixtures/struct-inline-test-cases');
+    }
+
+    private function listTestCaseFiles(string $dir) {
+        $files = new \DirectoryIterator($dir);
         foreach ($files as $file) {
             if ($file->isDot()) {
                 continue;
@@ -43,6 +50,26 @@ class StructGenTest extends TestCase
 
             yield $file->getFilename() => [file_get_contents($file->getPathname())];
         }
+    }
+
+    /**
+     * @dataProvider provide_for_can_generate_struct_files_externally
+     * @test
+     */
+    public function can_generate_struct_files_externally(string $testContent) {
+        $genStruct = new GenerateStruct();
+        [$test, $expected] = explode('-- EXPECTED --', $testContent);
+
+        $result = $genStruct(GenerateStructArgs::external($test));
+
+        $this->assertEquals(
+            trim($expected),
+            trim((new Standard())->prettyPrint($result->ast()))
+        );
+    }
+
+    public function provide_for_can_generate_struct_files_externally() {
+        yield from $this->listTestCaseFiles(__DIR__ . '/Fixtures/struct-external-test-cases');
     }
 
     /** @test */
@@ -58,6 +85,20 @@ class StructGenTest extends TestCase
     }
 
     /** @test */
+    public function can_generate_structs_externally_for_files() {
+        generateStructsExternallyForFiles(traversePhpFiles([
+            __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/Acme.php',
+            __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/GlobalClass.php',
+            __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/Foo.php',
+        ]), __DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/.generated.php');
+
+        $this->assertEquals(
+            trim(file_get_contents(__DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/.generated-expected.php')),
+            trim(file_get_contents(__DIR__ . '/Fixtures/generate-struct-externally-for-files-test-cases/.generated.php'))
+        );
+    }
+
+    /** @test */
     public function files_without_any_matching_classes_are_left_untouched() {
         $genStruct = new GenerateStruct();
         $input = <<<'PHP'
@@ -69,6 +110,22 @@ function bar() {
 
 }
 PHP;
-        $this->assertEquals($input, $genStruct($input));
+        $this->assertEquals($input, $genStruct(GenerateStructArgs::inline($input))->code());
+    }
+
+    /** @test */
+    public function external_struct_generation_does_not_support_multiple_namespaces() {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('External struct generation does not currently support multiple namespaces in one source.');
+
+        (new GenerateStruct())(GenerateStructArgs::external(<<<'PHP'
+<?php
+
+namespace A {
+    class Foo { use FooStruct; }
+}
+namespace B {}
+PHP
+        ));
     }
 }
