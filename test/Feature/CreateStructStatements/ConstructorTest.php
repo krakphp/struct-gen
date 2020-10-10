@@ -26,6 +26,8 @@ class Acme {
     public $arrays;
     /** @var ?Nested\Acme */
     public $nestedClass;
+    /** int|string */
+    public $union;
     /** @var int */
     public $default = 0;
 }
@@ -35,7 +37,7 @@ CLASS
  * @param string[] $tags
  * @param ArrayObject[] $arrays
  */
-public function __construct($id, string $code, array $tags, ?int $count, SplFileInfo $file, array $arrays, ?Nested\Acme $nestedClass, int $default = 0)
+public function __construct($id, string $code, array $tags, ?int $count, SplFileInfo $file, array $arrays, ?Nested\Acme $nestedClass, $union, int $default = 0)
 {
     $this->id = $id;
     $this->code = $code;
@@ -44,6 +46,7 @@ public function __construct($id, string $code, array $tags, ?int $count, SplFile
     $this->file = $file;
     $this->arrays = $arrays;
     $this->nestedClass = $nestedClass;
+    $this->union = $union;
     $this->default = $default;
 }
 STMT

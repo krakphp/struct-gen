@@ -42,15 +42,15 @@ final class AtomicType
     }
 
     /** converts the type into a valid php string */
-    public function toPhpString(): string {
-        if ($this->isArray) {
-            return 'array';
-        }
-
+    public function toPhpString(): ?string {
         $res = '';
         if ($this->nullable) {
             $res .= '?';
         }
+        if ($this->isArray) {
+            return $res . 'array';
+        }
+
         $res .= $this->typeDefinition;
         return $res;
     }

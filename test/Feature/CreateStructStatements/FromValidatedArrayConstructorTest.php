@@ -25,6 +25,8 @@ class Acme {
     public $salePrice;
     /** @var ?Price[] */
     public $allPrices = [];
+    /** int|string */
+    public $union;
 }
 CLASS
             ,<<<'STMT'
@@ -32,7 +34,7 @@ public static function fromValidatedArray(array $data) : self
 {
     return new self($data['id'], $data['code'], array_key_exists('tags', $data) ? $data['tags'] : [], array_key_exists('finished', $data) ? $data['finished'] : false, Price::fromValidatedArray($data['price']), $data['salePrice'] === null ? null : Price::fromValidatedArray($data['salePrice']), array_key_exists('allPrices', $data) ? \array_map(function (?array $value) : ?Price {
         return $value === null ? null : Price::fromValidatedArray($value);
-    }, $data['allPrices']) : []);
+    }, $data['allPrices']) : [], $data['union']);
 }
 STMT
 );

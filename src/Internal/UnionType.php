@@ -18,7 +18,11 @@ final class UnionType
     }
 
     /** Converts type into a valid php type representation */
-    public function toPhpString(): string {
+    public function toPhpString(): ?string {
+        if (count($this->atomicTypes) > 1) {
+            return null; // no type is wide enough, use implicit dynamic type with null
+        }
+
         return $this->atomicTypes[0]->toPhpString();
     }
 

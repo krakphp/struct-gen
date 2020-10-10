@@ -23,6 +23,8 @@ class Acme {
     public $finished = false;
     /** @var ?Price */
     public $totalPrice;
+    /** int|string */
+    public $union;
 }
 CLASS
             ,<<<'STMT'
@@ -30,7 +32,7 @@ public function toArray() : array
 {
     return ['id' => $this->id, 'code' => $this->code, 'tags' => $this->tags, 'prices' => \array_map(function (?Price $value) : ?array {
         return $value === null ? null : $value->toArray();
-    }, $this->prices), 'finished' => $this->finished, 'totalPrice' => $this->totalPrice === null ? null : $this->totalPrice->toArray()];
+    }, $this->prices), 'finished' => $this->finished, 'totalPrice' => $this->totalPrice === null ? null : $this->totalPrice->toArray(), 'union' => $this->union];
 }
 STMT
 );

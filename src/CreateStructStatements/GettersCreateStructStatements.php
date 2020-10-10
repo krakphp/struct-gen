@@ -25,7 +25,7 @@ final class GettersCreateStructStatements implements CreateStructStatements
             if ($type && $type->toPhpString() !== $type->toString()) {
                 $method->setDocComment("/** @return {$type->toString()} */");
             }
-            if ($type) {
+            if ($type && $type->toPhpString()) {
                 $method->setReturnType($type->toPhpString());
             }
 

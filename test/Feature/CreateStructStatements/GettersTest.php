@@ -21,6 +21,8 @@ class Acme {
     public $prices;
     /** @var bool */
     public $finished = false;
+    /** @var bool|string */
+    public $success = false;
     /** @var ?Price */
     public $totalPrice;
 }
@@ -35,18 +37,23 @@ public function code() : string
     return $this->code;
 }
 /** @return ?string[] */
-public function tags() : array
+public function tags() : ?array
 {
     return $this->tags;
 }
 /** @return ?Price[] */
-public function prices() : array
+public function prices() : ?array
 {
     return $this->prices;
 }
 public function finished() : bool
 {
     return $this->finished;
+}
+/** @return bool|string */
+public function success()
+{
+    return $this->success;
 }
 public function totalPrice() : ?Price
 {

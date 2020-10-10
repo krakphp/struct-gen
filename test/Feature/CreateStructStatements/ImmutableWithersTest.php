@@ -23,6 +23,8 @@ class Acme {
     public $finished = false;
     /** @var ?Price */
     public $totalPrice;
+    /** int|string */
+    public $union;
 }
 CLASS
             ,<<<'STMT'
@@ -39,14 +41,14 @@ public function withCode(string $code) : self
     return $self;
 }
 /** @param ?string[] $tags */
-public function withTags(array $tags = []) : self
+public function withTags(?array $tags = []) : self
 {
     $self = clone $this;
     $self->tags = $tags;
     return $self;
 }
 /** @param ?Price[] $prices */
-public function withPrices(array $prices) : self
+public function withPrices(?array $prices) : self
 {
     $self = clone $this;
     $self->prices = $prices;
@@ -62,6 +64,12 @@ public function withTotalPrice(?Price $totalPrice) : self
 {
     $self = clone $this;
     $self->totalPrice = $totalPrice;
+    return $self;
+}
+public function withUnion($union) : self
+{
+    $self = clone $this;
+    $self->union = $union;
     return $self;
 }
 STMT
