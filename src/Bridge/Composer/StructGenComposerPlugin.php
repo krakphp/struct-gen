@@ -11,6 +11,7 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\Capability\CommandProvider;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\Capable;
+use Composer\Script\ScriptEvents;
 
 final class StructGenComposerPlugin implements PluginInterface, Capable, EventSubscriberInterface
 {
@@ -36,7 +37,7 @@ final class StructGenComposerPlugin implements PluginInterface, Capable, EventSu
      */
     public static function getSubscribedEvents() {
         return [
-            'pre-autoload-dump' => 'onPreAutoloadDump',
+            ScriptEvents::PRE_AUTOLOAD_DUMP => 'onPreAutoloadDump',
         ];
     }
 

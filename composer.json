@@ -22,7 +22,7 @@
     },
     "require": {
         "php": "^7.2",
-        "composer-plugin-api": "^1.1",
+        "composer-plugin-api": "^1.1 | ^2.0",
         "krak/lex": "^1.0",
         "nikic/php-parser": "^4.3"
     },
