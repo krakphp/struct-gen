@@ -4,6 +4,7 @@ namespace Krak\StructGen\CreateStructStatements;
 
 use Krak\StructGen\CreateStructStatements;
 use Krak\StructGen\CreateStructStatementsArgs;
+use Krak\StructGen\Internal\Props\ClassProp;
 use Krak\StructGen\Internal\PropTypes;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\Class_;
@@ -18,10 +19,9 @@ final class ConstructorCreateStructStatements implements CreateStructStatements
         }
 
         $method = $args->factory()->method('__construct')
-            ->addParams(array_map(
-                PropTypes::paramBuilderFromProp($args->factory(), $args->printer()),
-                $args->class()->getProperties()
-            ))
+            ->addParams(array_map(function(ClassProp $prop) use ($args) {
+                return $prop->toParam($args->factory());
+            }, $args->props()->toArray()))
             ->addStmts(array_map(function(Property $prop) use ($args) {
                 $propName = (string) $prop->props[0]->name;
                 return new Expr\Assign(
@@ -31,7 +31,7 @@ final class ConstructorCreateStructStatements implements CreateStructStatements
             }, $args->class()->getProperties()))
             ->makePublic();
 
-        if ($docComment = PropTypes::getParamsDocCommentForProps($args->class()->getProperties())) {
+        if ($docComment = $args->props()->getNeededDocParams()) {
             $method->setDocComment($docComment);
         }
 

@@ -4,6 +4,7 @@ namespace Krak\StructGen\CreateStructStatements;
 
 use Krak\StructGen\CreateStructStatements;
 use Krak\StructGen\CreateStructStatementsArgs;
+use Krak\StructGen\Internal\Props\ClassProp;
 use Krak\StructGen\Internal\PropTypes;
 use Krak\StructGen\Internal\TypeParser;
 use PhpParser\Node\Stmt;
@@ -11,26 +12,17 @@ use PhpParser\Node\Stmt;
 final class GettersCreateStructStatements implements CreateStructStatements
 {
     public function __invoke(CreateStructStatementsArgs $args): array {
-        $methods = [];
-        foreach ($args->class()->getProperties() as $prop) {
-            if (count($prop->props) !== 1) {
-                throw new \RuntimeException('Does not support property definitions that define more than one property.');
-            }
-            $method = $args->factory()->method((string) $prop->props[0]->name)
+        return array_map(function(ClassProp $prop) use ($args) {
+            $method = $args->factory()->method((string) $prop->name())
                 ->makePublic()
-                ->addStmt(new Stmt\Return_($args->factory()->propertyFetch($args->factory()->var('this'), $prop->props[0]->name)));
-
-            $varDef = PropTypes::getVarDefinitionFromProperty($prop);
-            $type = $varDef ? (new TypeParser())->parse($varDef) : null;
-            if ($type && $type->toPhpString() !== $type->toString()) {
-                $method->setDocComment("/** @return {$type->toString()} */");
+                ->addStmt(new Stmt\Return_($args->factory()->propertyFetch($args->factory()->var('this'), $prop->name())));
+            if (!$prop->type()->isEmpty() && !$prop->type()->canBeFullyExpressedInPhp()) {
+                $method->setDocComment("/** @return {$prop->type()->toString()} */");
             }
-            if ($type && $type->toPhpString()) {
-                $method->setReturnType($type->toPhpString());
+            if ($prop->type()->toPhpString()) {
+                $method->setReturnType($prop->type()->toPhpString());
             }
-
-            $methods[] = $method->getNode();
-        }
-        return $methods;
+            return $method->getNode();
+        }, $args->props()->toArray());
     }
 }

@@ -4,6 +4,7 @@ namespace Krak\StructGen\CreateStructStatements;
 
 use Krak\StructGen\CreateStructStatements;
 use Krak\StructGen\CreateStructStatementsArgs;
+use Krak\StructGen\Internal\Props\ClassProp;
 use Krak\StructGen\Internal\PropTypes;
 use Krak\StructGen\Internal\TypeParser;
 use PhpParser\Node\{Stmt, Expr};
@@ -17,20 +18,17 @@ final class FromValidatedArrayConstructorCreateStructStatements implements Creat
                 ->makePublic()
                 ->addParam($args->factory()->param('data')->setType('array')->getNode())
                 ->setReturnType('self')
-                ->addStmt(new Stmt\Return_($args->factory()->new('self', array_map(function(Stmt\Property $prop) use ($args) {
-                    $varDef = PropTypes::getVarDefinitionFromProperty($prop);
-                    $type = $varDef ? $type = (new TypeParser())->parse($varDef) : null;
-                    $shouldFromArray = PropTypes::canCallMethodsOnType($type);
-                    $shouldCheckNullable = $shouldFromArray && $type->atomicTypes()[0]->nullable();
-                    $shouldArrayMap = $shouldFromArray && $type->atomicTypes()[0]->isArray();
+                ->addStmt(new Stmt\Return_($args->factory()->new('self', array_map(function(ClassProp $prop) use ($args) {
+                    $shouldFromArray = PropTypes::canCallMethodsOnType($prop->type());
+                    $shouldCheckNullable = $shouldFromArray && $prop->type()->atomicTypes()[0]->nullable();
+                    $shouldArrayMap = $shouldFromArray && $prop->type()->atomicTypes()[0]->isArray();
 
-                    $propName = (string) $prop->props[0]->name;
                     $fetchExpr = $fetchFromArray = new Expr\ArrayDimFetch(
                         $args->factory()->var('data'),
-                        $args->factory()->val($propName)
+                        $args->factory()->val($prop->name())
                     );
                     if ($shouldFromArray) {
-                        $fetchExpr = $args->factory()->staticCall($type->atomicTypes()[0]->typeDefinition(), 'fromValidatedArray', [
+                        $fetchExpr = $args->factory()->staticCall($prop->type()->atomicTypes()[0]->typeDefinition(), 'fromValidatedArray', [
                             $fetchFromArray
                         ]);
                     }
@@ -42,17 +40,17 @@ final class FromValidatedArrayConstructorCreateStructStatements implements Creat
                         );
                     }
                     if ($shouldArrayMap) {
-                        $callFromArray = $args->factory()->staticCall($type->atomicTypes()[0]->typeDefinition(), 'fromValidatedArray', [
+                        $callFromArray = $args->factory()->staticCall($prop->type()->atomicTypes()[0]->typeDefinition(), 'fromValidatedArray', [
                             $args->factory()->var('value')
                         ]);
                         $fetchExpr = $args->factory()->funcCall('\array_map', [
                             new Expr\Closure([
                                 'params' => [
                                     $args->factory()->param('value')
-                                        ->setType($type->atomicTypes()[0]->nullable() ? '?array' : 'array')
+                                        ->setType($prop->type()->atomicTypes()[0]->nullable() ? '?array' : 'array')
                                         ->getNode()
                                 ],
-                                'returnType' => $type->atomicTypes()[0]->withIsArray(false)->toPhpString(),
+                                'returnType' => $prop->type()->atomicTypes()[0]->withIsArray(false)->toPhpString(),
                                 'stmts' => [
                                     new Stmt\Return_($shouldCheckNullable
                                         ? new Expr\Ternary(
@@ -67,14 +65,14 @@ final class FromValidatedArrayConstructorCreateStructStatements implements Creat
                             $fetchFromArray
                         ]);
                     }
-                    return $prop->props[0]->default === null
+                    return $prop->default() === null
                         ? $fetchExpr
                         : new Expr\Ternary(
-                            $args->factory()->funcCall('array_key_exists', [$args->factory()->val($propName), $args->factory()->var('data')]),
+                            $args->factory()->funcCall('array_key_exists', [$args->factory()->val($prop->name()), $args->factory()->var('data')]),
                             $fetchExpr,
-                            $prop->props[0]->default
+                            $prop->default()
                         );
-                }, $args->class()->getProperties()))))
+                }, $args->props()->toArray()))))
                 ->getNode()
         ];
     }

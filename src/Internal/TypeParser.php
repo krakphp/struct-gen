@@ -40,6 +40,10 @@ final class TypeParser
     const TOK_LPAREN = '(';
     const TOK_RPAREN = ')';
 
+    public static function fromString(?string $input): UnionType {
+        return $input ? (new self())->parse($input) : UnionType::empty();
+    }
+
     public function parse(string $input): UnionType {
         $tokenStream = tokenStreamLexer(skipLexer(lexer([
             '/\|/A' => self::TOK_PIPE,
