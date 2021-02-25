@@ -1,0 +1,58 @@
+<?php
+
+final class Test74Props
+{
+    use Test74PropsStruct;
+
+    private int $id;
+    private ?string $name = null;
+}
+
+-- EXPECTED --
+
+<?php
+
+final class Test74Props
+{
+    use Test74PropsStruct;
+
+    private int $id;
+    private ?string $name = null;
+}
+
+trait Test74PropsStruct
+{
+    public function __construct(int $id, ?string $name = null)
+    {
+        $this->id = $id;
+        $this->name = $name;
+    }
+    public static function fromValidatedArray(array $data) : self
+    {
+        return new self($data['id'], array_key_exists('name', $data) ? $data['name'] : null);
+    }
+    public function toArray() : array
+    {
+        return ['id' => $this->id, 'name' => $this->name];
+    }
+    public function id() : int
+    {
+        return $this->id;
+    }
+    public function name() : ?string
+    {
+        return $this->name;
+    }
+    public function withId(int $id) : self
+    {
+        $self = clone $this;
+        $self->id = $id;
+        return $self;
+    }
+    public function withName(?string $name = null) : self
+    {
+        $self = clone $this;
+        $self->name = $name;
+        return $self;
+    }
+}

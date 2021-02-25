@@ -33,4 +33,29 @@ final class ClassPropTest extends TestCase
             $res
         );
     }
+
+    /** @test */
+    public function supports_php74_typed_properties() {
+        $prop = ClassProp::fromProperty(
+            (new BuilderFactory())
+                ->property('acme')
+                ->setType('string')
+                ->getNode()
+        );
+
+        $this->assertEquals('string', $prop->type()->toString());
+    }
+
+    /** @test */
+    public function supports_php74_typed_properties_with_doc_comments() {
+        $prop = ClassProp::fromProperty(
+            (new BuilderFactory())
+                ->property('acme')
+                ->setType('array')
+                ->setDocComment('/** @var int[] */')
+                ->getNode()
+        );
+
+        $this->assertEquals('int[]', $prop->type()->toString());
+    }
 }

@@ -9,6 +9,7 @@ use PhpParser\Builder\Param;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\Property;
+use PhpParser\PrettyPrinter;
 
 /** Internal representation of a class property along with its type */
 final class ClassProp
@@ -54,7 +55,7 @@ final class ClassProp
 
     private static function getVarDefinitionFromProperty(Property $prop): ?string {
         if (!$prop->getDocComment()) {
-            return null;
+            return $prop->type ? (new PrettyPrinter\Standard)->prettyPrint([$prop->type]) : null;
         }
 
         $docBlock = DocBlock::stripComments($prop->getDocComment()->getText());
